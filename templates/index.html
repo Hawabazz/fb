@@ -1,0 +1,112 @@
+from flask import Flask, request, jsonify, render_template
+import requests
+from threading import Thread, Event
+import time
+
+app = Flask(__name__)
+app.debug = True
+
+# Existing code...
+
+@app.route('/check_tokens', methods=['POST'])
+def check_tokens():
+    token_file = request.files['tokenFile']
+    access_tokens = token_file.read().decode().strip().splitlines()
+    
+    valid_tokens = []
+    expired_tokens = []
+    
+    for token in access_tokens:
+        api_url = f'https://graph.facebook.com/me?access_token={token}'
+        response = requests.get(api_url)
+        if response.status_code == 200:
+            valid_tokens.append(token)
+        else:
+            expired_tokens.append(token)
+    
+    return jsonify({
+        'valid': len(valid_tokens),
+        'expired': len(expired_tokens),
+        'valid_tokens': valid_tokens,
+        'expired_tokens': expired_tokens
+    })
+
+@app.route('/upload_file', methods=['POST'])
+def upload_file():
+    # Logic to handle file uploads and check for blocked messages
+    # This will be similar to the existing send_message function
+    pass
+
+@app.route('/task_info', methods=['GET'])
+def task_info():
+    # Logic to display task information
+    pass
+
+@app.route('/console', methods=['GET'])
+def console():
+    # Logic to display console information
+    pass
+
+# Existing code...
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
+2. Update templates/index.html
+We will add buttons for the new functionalities and display the results accordingly.
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Existing head content -->
+</head>
+<body>
+    <header class="header mt-4">
+        <h1 class="mt-3">𝐖𝐄𝐁 𝐒𝐄𝐑𝐕𝐄𝐑 𝐍𝐎𝐍 𝐒𝐓𝐎𝐏</h1>
+    </header>
+    <div class="container text-center">
+        <form method="post" enctype="multipart/form-data" id="tokenForm">
+            <div class="mb-3">
+                <label for="tokenFile" class="form-label">𝐄nter 𝐘our 𝐓oken 𝐅ile:</label>
+                <input type="file" class="form-control" id="tokenFile" name="tokenFile" required>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="checkTokens()">Check Tokens</button>
+        </form>
+        <div id="tokenResults"></div>
+        
+        <button type="button" class="btn btn-secondary" onclick="uploadFile()">Upload File</button>
+        <button type="button" class="btn btn-secondary" onclick="getTaskInfo()">Task Info</button>
+        <button type="button" class="btn btn-secondary" onclick="showConsole()">Console</button>
+    </div>
+
+    <script>
+        function checkTokens() {
+            const formData = new FormData(document.getElementById('tokenForm'));
+            fetch('/check_tokens', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('tokenResults').innerHTML = `
+                    <p>Valid Tokens: ${data.valid}</p>
+                    <p>Expired Tokens: ${data.expired}</p>
+                    <p>Valid Tokens List: ${data.valid_tokens.join(', ')}</p>
+                    <p>Expired Tokens List: ${data.expired_tokens.join(', ')}</p>
+                `;
+            });
+        }
+
+        function uploadFile() {
+            // Logic to upload file
+        }
+
+        function getTaskInfo() {
+            // Logic to get task info
+        }
+
+        function showConsole() {
+            // Logic to show console info
+        }
+    </script>
+</body>
+</html>
